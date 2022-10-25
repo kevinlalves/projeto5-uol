@@ -26,6 +26,8 @@
   <link rel="stylesheet" href="./assets/stylesheets/index.css">
   <script defer src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <script defer src="./assets/javascript/index.js"></script>
+  <script defer type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script defer nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
@@ -38,6 +40,55 @@
         <p>Entrar</p>
       </button>
     </div>
+  </div>
+  <header>
+    <img src="./assets/images/uol-header.png" alt="uol logo">
+    <ion-icon id="nav-button" name="people"></ion-icon>
+  </header>
+  <div id="nav-background" class="nav-background">
+
+  </div>
+  <nav id="nav-bar">
+    <div class="users-header">
+      <h1>Escolha um contato para enviar mensagem:</h1>
+    </div>
+    <div id="todos" class="nav-line">
+      <ion-icon name="people"></ion-icon>
+      <p>Todos</p>
+      <img src="./assets/images/checkmark.png" alt="choosen option">
+    </div>
+    <div id="online-users">
+      <div class="nav-line">
+        <ion-icon name="person-circle"></ion-icon>
+        <p>Usuário 1</p>
+      </div>
+      <div class="nav-line">
+        <ion-icon name="person-circle"></ion-icon>
+        <p>Usuário 2</p>
+      </div>
+    </div>
+    <div class="mode-header">
+      <h1>Escolha a visibilidade</h1>
+    </div>
+    <div class="nav-line">
+      <ion-icon name="lock-open"></ion-icon>
+      <p>Público</p>
+      <img src="./assets/images/checkmark.png" alt="choosen option">
+    </div>
+    <div class="nav-line">
+      <ion-icon name="lock-closed"></ion-icon>
+      <p>Reservadamente</p>
+    </div>
+  </nav>
+  <main id="chat-box">
+
+  </main>
+  <div class="message-box">
+    <div class="input-box">
+      <input id="message-text" type="text" placeholder="Escreva aqui...">
+      <p id="type-status"></p>
+    </div>
+    <ion-icon id="send-message" name="paper-plane-outline"></ion-icon>
   </div>
 </body>
 
