@@ -8,8 +8,11 @@ const navBar = document.getElementById("nav-bar");
 const privateOption = document.getElementById("private_message");
 const publicOption = document.getElementById("message");
 const sendingToAll = document.getElementById("0");
+const sentAudio = new Audio("./assets/audio/sent.mp3");
+const receivedAudio = new Audio("./assets/audio/received.mp3");
 const enterKey = 13;
 const drivenApi = "https://mock-api.driven.com.br/api/v6/uol/";
+const drivenTimeZone = -12;
 loginButton.addEventListener("click", validateUserAndLogin);
 navButton.addEventListener("click", openNavBar);
 navBack.addEventListener("click", closeNavBar);
@@ -21,8 +24,14 @@ function enterToLogin(e) {
   }
 }
 
+function playAudio(audio) {
+  if (audio.currentTime) {
+    audio.currentTime = 0;
+  }
+  audio.play();
+}
+
 function openNavBar() {
-  console.log("nav-bar", navBar);
   navBack.classList.add("show-background-nav");
   navBar.classList.add("nav-open");
 }
@@ -34,6 +43,12 @@ function closeNavBar(e) {
   }
 }
 
+function formatTime(dateString) {
+  const date = new Date();
+  date.setUTCHours(Number(dateString.slice(0, 2)) - drivenTimeZone);
+  return date.getHours() + dateString.slice(2);
+}
+
 function validateUserAndLogin() {
   const name = document.getElementById("username").value;
   axios.post(drivenApi + "participants", {
@@ -43,7 +58,6 @@ function validateUserAndLogin() {
       login(name);
     })
     .catch(error => {
-      console.log(error);
       const errorMsg = loginButton.previousElementSibling;
       if (error.response.status === 400) {
         errorMsg.innerText = "username typed is either empty or used";
@@ -68,6 +82,7 @@ class User {
     this.lastMessageTime = "";
     this.type = "message";
     this.users = [{ name: "Todos" }];
+    this.msgIncoming = false;
     window.removeEventListener("keydown", enterToLogin);
     window.addEventListener("keydown", this.enterToSend.bind(this));
     sendingToAll.addEventListener("click", this.selectRecipient.bind(this));
@@ -79,8 +94,7 @@ class User {
     this.updateMessageTypeStatus();
     setInterval(this.keepConnectionAlive.bind(this), 5000);
     setInterval(this.updateUsersOnline.bind(this), 7000);
-    setInterval(this.updateChatMessages.bind(this), 3000);
-    console.log("I'm getting created");
+    setInterval(this.updateChatMessages.bind(this), 1000);
   }
   enterToSend(e) {
     if (e.which === enterKey) {
@@ -89,10 +103,6 @@ class User {
   }
   updateMessageTypeStatus() {
     const typeStatus = document.getElementById("type-status");
-    console.log("updateMessageTypeStatus");
-    console.log("this.users", this.users);
-    console.log("this.msgRecipient", this.msgRecipient);
-    console.log("updateMessageTypeStatus");
     typeStatus.innerText = `Enviando para ${this.users[this.msgRecipient].name}`;
     if (this.type === "private_message") {
       typeStatus.innerText += " (reservadamente)";
@@ -109,25 +119,38 @@ class User {
         const messages = response.data;
         let newInnerHTML = "";
         let changed = false;
+        let msgAudio = false;
+        let visibility;
+        if (this.msgIncoming) {
+          playAudio(sentAudio);
+          this.msgIncoming = false;
+        }
         for (let i = messages.length - 1; i >= 0 && messages[i].time !== this.lastMessageTime; i--) {
-          let visibility = "";
-          changed = true;
+          visibility = "";
           if (messages[i].type === "private_message") {
+            if (messages[i].to !== this.name && messages[i].from !== this.name) {
+              continue;
+            }
             visibility = "reservadamente";
           }
+          changed = true;
           newInnerHTML = `
             <div class="chat-line ${messages[i].type}">
             <p>
-              (${messages[i].time})  <span class="strong"> ${messages[i].from} </span> ${visibility} para
+              (${formatTime(messages[i].time)})  <span class="strong"> ${messages[i].from} </span> ${visibility} para
                 <span class="strong"> ${messages[i].to}</span>: ${messages[i].text}
             </p>
             </div>
           ` + newInnerHTML;
+          msgAudio ||= messages[i].type !== "status" && messages[i].from !== this.name;
         }
         if (changed) {
           chatBox.innerHTML += newInnerHTML;
           this.lastMessageTime = messages[messages.length - 1].time;
           chatBox.lastElementChild.scrollIntoView();
+        }
+        if (msgAudio) {
+          playAudio(receivedAudio);
         }
       });
   }
@@ -142,6 +165,7 @@ class User {
       })
         .then(() => {
           msgText.value = "";
+          this.msgIncoming = true;
         });
     }
   }
@@ -173,23 +197,18 @@ class User {
           newElement.addEventListener("click", this.selectRecipient.bind(this));
         }
         if (!selectedPersisted && this.msgRecipient !== "0") {
-          console.log("msgRecipient", this.msgRecipient);
-          console.log(typeof (this.msgRecipient));
-          console.log("the last one disappeared, police!!!");
           sendingToAll.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
           this.msgRecipient = "0";
           this.type = "message";
+          this.updateMessageTypeStatus();
         }
       });
   }
   selectOption(clickedElement, attr) {
-
     if (this[attr] === clickedElement.id) {
       return;
     }
     const oldRecipient = document.getElementById(this[attr]);
-    console.log("oldRecipient", oldRecipient);
-    console.log('oldRecipient.lastElementChild', oldRecipient.lastElementChild);
     oldRecipient.removeChild(oldRecipient.lastElementChild);
     this[attr] = clickedElement.id;
     clickedElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
