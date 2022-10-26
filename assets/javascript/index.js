@@ -83,12 +83,12 @@ function login(name) {
 class User {
   constructor(name) {
     this.name = name;
-    this.msgRecipient = "0";
-    this.selectedName = "";
+    this.receiverID = "0";
+    this.navbarSelectedUsername = "";
     this.lastMessageTime = "";
     this.type = "message";
     this.users = [{ name: "Todos" }];
-    this.msgIncoming = false;
+    this.msgSent = false;
     window.removeEventListener("keydown", enterToLogin);
     window.addEventListener("keydown", this.enterToSend.bind(this));
     sendingToAll.addEventListener("click", this.selectRecipient.bind(this));
@@ -109,7 +109,7 @@ class User {
   }
   updateMessageTypeStatus() {
     const typeStatus = document.getElementById("type-status");
-    typeStatus.innerText = `Enviando para ${this.users[this.msgRecipient].name}`;
+    typeStatus.innerText = `Enviando para ${this.users[this.receiverID].name}`;
     if (this.type === "private_message") {
       typeStatus.innerText += " (reservadamente)";
     }
@@ -125,11 +125,11 @@ class User {
         const messages = response.data;
         let newInnerHTML = "";
         let changed = false;
-        let msgAudio = false;
+        let newMessage = false;
         let visibility;
-        if (this.msgIncoming) {
+        if (this.msgSent) {
           playAudio(sentAudio);
-          this.msgIncoming = false;
+          this.msgSent = false;
         }
         for (let i = messages.length - 1; i >= 0 && messages[i].time !== this.lastMessageTime; i--) {
           visibility = "";
@@ -148,14 +148,14 @@ class User {
             </p>
             </div>
           ` + newInnerHTML;
-          msgAudio ||= messages[i].type !== "status" && messages[i].from !== this.name;
+          newMessage ||= messages[i].type !== "status" && messages[i].from !== this.name;
         }
         if (changed) {
           chatBox.innerHTML += newInnerHTML;
           this.lastMessageTime = messages[messages.length - 1].time;
           chatBox.lastElementChild.scrollIntoView();
         }
-        if (msgAudio) {
+        if (newMessage) {
           playAudio(receivedAudio);
         }
       });
@@ -165,13 +165,13 @@ class User {
     if (msgText.value) {
       axios.post(drivenApi + "messages", {
         from: this.name,
-        to: this.users[this.msgRecipient].name,
+        to: this.users[this.receiverID].name,
         text: msgText.value,
         type: this.type
       })
         .then(() => {
           msgText.value = "";
-          this.msgIncoming = true;
+          this.msgSent = true;
         });
     }
   }
@@ -194,17 +194,17 @@ class User {
           <ion-icon name="person-circle"></ion-icon>
           <p>${this.users[i].name}</p>
           `;
-          if (this.selectedName === this.users[i].name) {
+          if (this.navbarSelectedUsername === this.users[i].name) {
             selectedPersisted = true;
             newElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
-            this.msgRecipient = i.toString();
+            this.receiverID = i.toString();
           }
           usersBox.appendChild(newElement);
           newElement.addEventListener("click", this.selectRecipient.bind(this));
         }
-        if (!selectedPersisted && this.msgRecipient !== "0") {
+        if (!selectedPersisted && this.receiverID !== "0") {
           sendingToAll.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
-          this.msgRecipient = "0";
+          this.receiverID = "0";
           this.type = "message";
           this.updateMessageTypeStatus();
         }
@@ -221,14 +221,14 @@ class User {
     this.updateMessageTypeStatus();
   }
   selectRecipient(e) {
-    this.selectOption(e.currentTarget, "msgRecipient");
-    this.selectedName = this.users[e.currentTarget.id].name;
-    if (this.selectedName === "Todos" && this.type === "private_message") {
+    this.selectOption(e.currentTarget, "receiverID");
+    this.navbarSelectedUsername = this.users[e.currentTarget.id].name;
+    if (this.navbarSelectedUsername === "Todos" && this.type === "private_message") {
       this.selectOption(publicOption, "type");
     }
   }
   selectPrivacy(e) {
-    if (e.currentTarget.id === "private_message" && this.users[this.msgRecipient].name === "Todos") {
+    if (e.currentTarget.id === "private_message" && this.users[this.receiverID].name === "Todos") {
       return;
     }
     this.selectOption(e.currentTarget, "type");
