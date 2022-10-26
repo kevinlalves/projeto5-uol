@@ -10,6 +10,8 @@ const publicOption = document.getElementById("message");
 const sendingToAll = document.getElementById("0");
 const sentAudio = new Audio("./assets/audio/sent.mp3");
 const receivedAudio = new Audio("./assets/audio/received.mp3");
+const loadingPanel = document.getElementById("loading-panel");
+const loginPanel = document.getElementById("login-panel");
 const enterKey = 13;
 const drivenApi = "https://mock-api.driven.com.br/api/v6/uol/";
 const drivenTimeZone = -12;
@@ -50,6 +52,8 @@ function formatTime(dateString) {
 }
 
 function validateUserAndLogin() {
+  loginPanel.classList.add("hidden");
+  loadingPanel.classList.remove("hidden");
   const name = document.getElementById("username").value;
   axios.post(drivenApi + "participants", {
     name: name
@@ -58,6 +62,8 @@ function validateUserAndLogin() {
       login(name);
     })
     .catch(error => {
+      loadingPanel.classList.add("hidden");
+      loginPanel.classList.remove("hidden");
       const errorMsg = loginButton.previousElementSibling;
       if (error.response.status === 400) {
         errorMsg.innerText = "username typed is either empty or used";
