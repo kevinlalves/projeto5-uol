@@ -5,6 +5,9 @@ const sendMsg = document.getElementById("send-message");
 const navButton = document.getElementById("nav-button");
 const navBack = document.getElementById("nav-background");
 const navBar = document.getElementById("nav-bar");
+const privateOption = document.getElementById("private_message");
+const publicOption = document.getElementById("message");
+const sendingToAll = document.getElementById("0");
 const enterKey = 13;
 const drivenApi = "https://mock-api.driven.com.br/api/v6/uol/";
 loginButton.addEventListener("click", validateUserAndLogin);
@@ -60,15 +63,22 @@ function login(name) {
 class User {
   constructor(name) {
     this.name = name;
-    this.msgRecipient = "todos";
+    this.msgRecipient = "0";
+    this.selectedName = "";
     this.lastMessageTime = "";
-    this.lastName = name;
     this.type = "message";
+    this.users = [{ name: "Todos" }];
     window.removeEventListener("keydown", enterToLogin);
     window.addEventListener("keydown", this.enterToSend.bind(this));
+    sendingToAll.addEventListener("click", this.selectRecipient.bind(this));
     sendMsg.addEventListener("click", this.postMessage.bind(this));
+    privateOption.addEventListener("click", this.selectPrivacy.bind(this));
+    publicOption.addEventListener("click", this.selectPrivacy.bind(this));
+    this.updateChatMessages();
+    this.updateUsersOnline();
     this.updateMessageTypeStatus();
     setInterval(this.keepConnectionAlive.bind(this), 5000);
+    setInterval(this.updateUsersOnline.bind(this), 7000);
     setInterval(this.updateChatMessages.bind(this), 3000);
     console.log("I'm getting created");
   }
@@ -79,7 +89,11 @@ class User {
   }
   updateMessageTypeStatus() {
     const typeStatus = document.getElementById("type-status");
-    typeStatus.innerText = `Enviando para ${this.msgRecipient}`;
+    console.log("updateMessageTypeStatus");
+    console.log("this.users", this.users);
+    console.log("this.msgRecipient", this.msgRecipient);
+    console.log("updateMessageTypeStatus");
+    typeStatus.innerText = `Enviando para ${this.users[this.msgRecipient].name}`;
     if (this.type === "private_message") {
       typeStatus.innerText += " (reservadamente)";
     }
@@ -92,26 +106,27 @@ class User {
   updateChatMessages() {
     axios.get(drivenApi + "messages")
       .then(response => {
-        console.log("update");
         const messages = response.data;
         let newInnerHTML = "";
         let changed = false;
-        for (let i = messages.length-1; i >= 0 && messages[i].time !== this.lastMessageTime; i--) {
+        for (let i = messages.length - 1; i >= 0 && messages[i].time !== this.lastMessageTime; i--) {
           let visibility = "";
           changed = true;
           if (messages[i].type === "private_message") {
             visibility = "reservadamente";
           }
           newInnerHTML = `
-            <p class="${messages[i].type}">
-              (${messages[i].time}) ${messages[i].from} ${visibility} para ${messages[i].to}:
-               ${messages[i].text}
+            <div class="chat-line ${messages[i].type}">
+            <p>
+              (${messages[i].time})  <span class="strong"> ${messages[i].from} </span> ${visibility} para
+                <span class="strong"> ${messages[i].to}</span>: ${messages[i].text}
             </p>
+            </div>
           ` + newInnerHTML;
         }
-        chatBox.innerHTML += newInnerHTML;
         if (changed) {
-          this.lastMessageTime = messages[messages.length-1].time;
+          chatBox.innerHTML += newInnerHTML;
+          this.lastMessageTime = messages[messages.length - 1].time;
           chatBox.lastElementChild.scrollIntoView();
         }
       });
@@ -121,12 +136,11 @@ class User {
     if (msgText.value) {
       axios.post(drivenApi + "messages", {
         from: this.name,
-        to: this.msgRecipient,
+        to: this.users[this.msgRecipient].name,
         text: msgText.value,
         type: this.type
       })
-        .then((response) => {
-          console.log(response);
+        .then(() => {
           msgText.value = "";
         });
     }
@@ -134,16 +148,64 @@ class User {
   updateUsersOnline() {
     axios.get(drivenApi + "participants")
       .then(response => {
-        console.log(response);
-        const users = response.data;
-        for (let i = users.length; i >= 0 && users[i].name !== this.lastName; i--) {
-          usersBox.innerHTML = `
-          <div class="nav-line">
+        this.users = [{ name: "Todos" }];
+        this.users = this.users.concat(response.data);
+        let newElement;
+        usersBox.innerHTML = "";
+        let selectedPersisted = false;
+        for (let i = 1; i < this.users.length; i++) {
+          if (this.name === this.users[i].name) {
+            continue;
+          }
+          newElement = document.createElement("div");
+          newElement.classList.add("nav-line");
+          newElement.id = i;
+          newElement.innerHTML = `
           <ion-icon name="person-circle"></ion-icon>
-          <p>${users[i].name}</p>
-          </div>
-          ` + usersBox.innerHTML;
+          <p>${this.users[i].name}</p>
+          `;
+          if (this.selectedName === this.users[i].name) {
+            selectedPersisted = true;
+            newElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+            this.msgRecipient = i.toString();
+          }
+          usersBox.appendChild(newElement);
+          newElement.addEventListener("click", this.selectRecipient.bind(this));
+        }
+        if (!selectedPersisted && this.msgRecipient !== "0") {
+          console.log("msgRecipient", this.msgRecipient);
+          console.log(typeof (this.msgRecipient));
+          console.log("the last one disappeared, police!!!");
+          sendingToAll.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+          this.msgRecipient = "0";
+          this.type = "message";
         }
       });
+  }
+  selectOption(clickedElement, attr) {
+
+    if (this[attr] === clickedElement.id) {
+      return;
+    }
+    const oldRecipient = document.getElementById(this[attr]);
+    console.log("oldRecipient", oldRecipient);
+    console.log('oldRecipient.lastElementChild', oldRecipient.lastElementChild);
+    oldRecipient.removeChild(oldRecipient.lastElementChild);
+    this[attr] = clickedElement.id;
+    clickedElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+    this.updateMessageTypeStatus();
+  }
+  selectRecipient(e) {
+    this.selectOption(e.currentTarget, "msgRecipient");
+    this.selectedName = this.users[e.currentTarget.id].name;
+    if (this.selectedName === "Todos" && this.type === "private_message") {
+      this.selectOption(publicOption, "type");
+    }
+  }
+  selectPrivacy(e) {
+    if (e.currentTarget.id === "private_message" && this.users[this.msgRecipient].name === "Todos") {
+      return;
+    }
+    this.selectOption(e.currentTarget, "type");
   }
 }

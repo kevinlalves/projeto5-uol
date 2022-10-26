@@ -6,6 +6,8 @@ body {
   font-family: "Roboto", sans-serif;
   font-weight: 400;
   background-color: #E5E5E5;
+  font-size: 16px;
+  display: flex;
 }
 
 .login-page {
@@ -15,7 +17,7 @@ body {
   padding-top: 25vh;
   width: 100%;
   height: 100vh;
-  z-index: 4;
+  z-index: 20;
   background-color: white;
 }
 
@@ -59,6 +61,7 @@ body {
   border-color: white;
   color: #696969;
   font-size: 18px;
+  cursor: pointer;
 }
 
 .login-panel h1 {
@@ -80,6 +83,8 @@ body {
 header {
   background-color: white;
   z-index: 2;
+  position: fixed;
+  top: 0;
   height: 80px;
   width: 100%;
   padding-left: 22px;
@@ -91,6 +96,7 @@ header {
 
 header ion-icon {
   font-size: 48px;
+  cursor: pointer;
 }
 
 .nav-background {
@@ -131,6 +137,7 @@ nav {
   position: relative;
   width: 100%;
   height: 36px;
+  cursor: pointer;
 }
 
 .nav-line img {
@@ -159,8 +166,8 @@ nav ion-icon {
 main {
   background-color: #E5E5E5;
   width: 100%;
-  margin-bottom: 80px;
-  margin-top: 80px;
+  margin-bottom: 84px;
+  margin-top: 106px;
 }
 
 .message-box {
@@ -171,7 +178,7 @@ main {
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
   padding-left: 18px;
   padding-right: 18px;
   z-index: 2;
@@ -179,6 +186,7 @@ main {
 
 .message-box ion-icon {
   font-size: 24px;
+  cursor: pointer;
 }
 
 .input-box {
@@ -209,10 +217,29 @@ main {
   font-size: 14px;
 }
 
-.private-message {
-  background-color: #FFDEDE;
+.private_message {
+  background-color: #FFDEDE !important;
 }
 
 .status {
-  background-color: #DCDCDC;
+  background-color: #DCDCDC !important;
+}
+
+.chat-line {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  padding-right: 12px;
+  padding-left: 6px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  background-color: white;
+  line-height: 20px;
+  overflow-wrap: anywhere;
+}
+
+.strong {
+  font-weight: 700;
 }
