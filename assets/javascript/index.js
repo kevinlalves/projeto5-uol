@@ -12,13 +12,24 @@ const sentAudio = new Audio("./assets/audio/sent.mp3");
 const receivedAudio = new Audio("./assets/audio/received.mp3");
 const loadingPanel = document.getElementById("loading-panel");
 const loginPanel = document.getElementById("login-panel");
+const errorMsg = loginButton.previousElementSibling;
+const errorMsgStorageKey = "errorMsg";
+const errorMsgStorageText = "Your connection timed out, please check if you're online";
 const enterKey = 13;
 const drivenApi = "https://mock-api.driven.com.br/api/v6/uol/";
 const drivenTimeZone = -12;
+networkError();
 loginButton.addEventListener("click", validateUserAndLogin);
 navButton.addEventListener("click", openNavBar);
 navBack.addEventListener("click", closeNavBar);
 window.addEventListener("keydown", enterToLogin);
+
+function networkError() {
+  if (localStorage.getItem(errorMsgStorageKey)) {
+    errorMsg.innerText = localStorage.getItem(errorMsgStorageKey);
+    localStorage.clear();
+  }
+}
 
 function enterToLogin(e) {
   if (e.which === enterKey) {
@@ -51,6 +62,22 @@ function formatTime(dateString) {
   return date.getHours() + dateString.slice(2);
 }
 
+function showErrorNotification() {
+  if (Notification.permission === "granted") {
+    new Notification("Error connecting to API", {
+      body: "Check your internet connection and wait to try again"
+    });
+  } else {
+    Notification.requestPermission().then(permission => {
+      if (permission === "granted") {
+        new Notification("Error connecting to API", {
+          body: "Check your internet connection and wait to try again"
+        });
+      }
+    });
+  }
+}
+
 function validateUserAndLogin() {
   loginPanel.classList.add("hidden");
   loadingPanel.classList.remove("hidden");
@@ -64,13 +91,11 @@ function validateUserAndLogin() {
     .catch(error => {
       loadingPanel.classList.add("hidden");
       loginPanel.classList.remove("hidden");
-      const errorMsg = loginButton.previousElementSibling;
       if (error.response.status === 400) {
         errorMsg.innerText = "username typed is either empty or used";
       } else {
         errorMsg.innerText = "failed to communicate with server";
       }
-      errorMsg.classList.add("show");
     });
 }
 
@@ -115,9 +140,18 @@ class User {
     }
   }
   keepConnectionAlive() {
-    axios.post(drivenApi + "status", {
-      name: this.name
-    });
+    axios({
+      method: "post",
+      url: drivenApi + "status",
+      timeout: 4000,
+      data: {
+        name: this.name
+      }
+    })
+      .catch(() => {
+        localStorage.setItem(errorMsgStorageKey, errorMsgStorageText);
+        window.location.reload();
+      });
   }
   updateChatMessages() {
     axios.get(drivenApi + "messages")
@@ -158,20 +192,31 @@ class User {
         if (newMessage) {
           playAudio(receivedAudio);
         }
+      })
+      .catch(() => {
+        showErrorNotification();
       });
   }
   postMessage() {
     const msgText = document.getElementById("message-text");
     if (msgText.value) {
-      axios.post(drivenApi + "messages", {
-        from: this.name,
-        to: this.users[this.receiverID].name,
-        text: msgText.value,
-        type: this.type
+      axios({
+        method: "post",
+        url: drivenApi + "messages",
+        timeout: 2000,
+        data: {
+          from: this.name,
+          to: this.users[this.receiverID].name,
+          text: msgText.value,
+          type: this.type
+        }
       })
         .then(() => {
           msgText.value = "";
           this.msgSent = true;
+        })
+        .catch(() => {
+          showErrorNotification();
         });
     }
   }
@@ -205,9 +250,11 @@ class User {
         if (!selectedPersisted && this.receiverID !== "0") {
           sendingToAll.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
           this.receiverID = "0";
-          this.type = "message";
-          this.updateMessageTypeStatus();
+          this.selectOption(publicOption, "type");
         }
+      })
+      .catch(() => {
+        showErrorNotification();
       });
   }
   selectOption(clickedElement, attr) {

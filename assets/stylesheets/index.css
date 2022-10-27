@@ -67,13 +67,8 @@ body {
 .login-panel h1 {
   margin-top: 10px;
   font-size: 14px;
-  visibility: hidden;
   color: red;
   font-weight: 300;
-}
-
-.show {
-  visibility: visible !important;
 }
 
 .hidden {
@@ -140,6 +135,13 @@ nav {
   cursor: pointer;
 }
 
+.nav-line p {
+  width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .nav-line img {
   position: absolute;
   right: 27px;
@@ -194,6 +196,7 @@ main {
   height: 64px;
   display: flex;
   flex-direction: column;
+  width: 90%;
 }
 
 .input-box input {
@@ -201,6 +204,7 @@ main {
   margin-bottom: 10px;
   border: none;
   font-size: 18px;
+  width: 100%;
 }
 
 .input-box input:focus {
@@ -216,6 +220,10 @@ main {
   margin-left: 2px;
   color: #505050;
   font-size: 14px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .private_message {
