@@ -112,6 +112,7 @@ nav {
   position: fixed;
   top: 0;
   right: 0;
+  overflow-y: auto;
 }
 
 .nav-open {
