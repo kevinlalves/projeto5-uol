@@ -106,20 +106,17 @@ header ion-icon {
 
 nav {
   background-color: white;
-  visibility: hidden;
   width: 0;
   height: 100vh;
   position: fixed;
   top: 0;
   right: 0;
-  overflow-y: auto;
 }
 
 .nav-open {
   width: 259px;
-  visibility: visible;
   z-index: 10;
-  transition: all 0.4s ease-out;
+  transition: all 0.4s;
 }
 
 .show-background-nav {
@@ -127,25 +124,29 @@ nav {
   z-index: 9;
 }
 
+#online-users {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
 .nav-line {
   display: flex;
   align-items: center;
-  position: relative;
   width: 100%;
   height: 36px;
   cursor: pointer;
 }
 
 .nav-line p {
-  width: 170px;
+  width: 190px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .nav-line img {
-  position: absolute;
-  right: 27px;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 
 nav ion-icon {
