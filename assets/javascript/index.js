@@ -12,17 +12,21 @@ const sentAudio = new Audio("./assets/audio/sent.mp3");
 const receivedAudio = new Audio("./assets/audio/received.mp3");
 const loadingPanel = document.getElementById("loading-panel");
 const loginPanel = document.getElementById("login-panel");
+const loginInput = document.getElementById("username");
 const errorMsg = loginButton.previousElementSibling;
 const errorMsgStorageKey = "errorMsg";
 const errorMsgStorageText = "Your connection timed out, please check if you're online";
-const enterKey = 13;
+const enterKey = "Enter";
 const drivenApi = "https://mock-api.driven.com.br/api/v6/uol/";
 const drivenTimeZone = -12;
+const keepConnectionCycle = 5000;
+const updateUsersCycle = 7000;
+const updateMessagesCycle = 1000;
 networkError();
 loginButton.addEventListener("click", validateUserAndLogin);
 navButton.addEventListener("click", openNavBar);
 navBack.addEventListener("click", closeNavBar);
-window.addEventListener("keydown", enterToLogin);
+loginInput.addEventListener("keydown", enterToLogin);
 
 function networkError() {
   if (localStorage.getItem(errorMsgStorageKey)) {
@@ -32,7 +36,7 @@ function networkError() {
 }
 
 function enterToLogin(e) {
-  if (e.which === enterKey) {
+  if (e.key === enterKey) {
     validateUserAndLogin();
   }
 }
@@ -114,8 +118,9 @@ class User {
     this.type = "message";
     this.users = [{ name: "Todos" }];
     this.msgSent = false;
-    window.removeEventListener("keydown", enterToLogin);
-    window.addEventListener("keydown", this.enterToSend.bind(this));
+    const messageInput = document.getElementById("message-text");
+    loginInput.removeEventListener("keydown", enterToLogin);
+    messageInput.addEventListener("keydown", this.enterToSend.bind(this));
     sendingToAll.addEventListener("click", this.selectRecipient.bind(this));
     sendMsg.addEventListener("click", this.postMessage.bind(this));
     privateOption.addEventListener("click", this.selectPrivacy.bind(this));
@@ -123,12 +128,12 @@ class User {
     this.updateChatMessages();
     this.updateUsersOnline();
     this.updateMessageTypeStatus();
-    setInterval(this.keepConnectionAlive.bind(this), 5000);
-    setInterval(this.updateUsersOnline.bind(this), 7000);
-    setInterval(this.updateChatMessages.bind(this), 1000);
+    setInterval(this.keepConnectionAlive.bind(this), keepConnectionCycle);
+    setInterval(this.updateUsersOnline.bind(this), updateUsersCycle);
+    setInterval(this.updateChatMessages.bind(this), updateMessagesCycle);
   }
   enterToSend(e) {
-    if (e.which === enterKey) {
+    if (e.key === enterKey) {
       this.postMessage();
     }
   }
