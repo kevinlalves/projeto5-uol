@@ -180,7 +180,7 @@ class User {
           }
           changed = true;
           newInnerHTML = `
-            <div class="chat-line ${messages[i].type} data-test='message'">
+            <div class="chat-line ${messages[i].type}" data-test="message">
             <p>
               (${formatTime(messages[i].time)})  <span class="strong"> ${messages[i].from} </span> ${visibility} para
                 <span class="strong"> ${messages[i].to}</span>: ${messages[i].text}
