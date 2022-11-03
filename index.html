@@ -38,16 +38,16 @@
     </div>
     <div id="login-panel" class="login-panel">
       <img src="./assets/images/uol-login.png" alt="logo do Uol">
-      <input id="username" type="text" placeholder="Digite seu nome">
+      <input data-test="input-name" id="username" type="text" placeholder="Digite seu nome">
       <h1></h1>
-      <button id="send-user">
+      <button data-test="send-name" id="send-user">
         <p>Entrar</p>
       </button>
     </div>
   </div>
   <header>
     <img src="./assets/images/uol-header.png" alt="uol logo">
-    <ion-icon id="nav-button" name="people"></ion-icon>
+    <ion-icon id="nav-button" name="people" data-test="open-participants"></ion-icon>
   </header>
   <div id="nav-background" class="nav-background">
 
@@ -56,7 +56,7 @@
     <div class="users-header strong">
       <h1>Escolha um contato para enviar mensagem:</h1>
     </div>
-    <div id="0" class="nav-line">
+    <div id="0" class="nav-line" data-test="all">
       <ion-icon name="people"></ion-icon>
       <p>Todos</p>
       <img src="./assets/images/checkmark.png" alt="choosen option">
@@ -82,7 +82,7 @@
   <div class="message-box">
     <div class="input-box">
       <input id="message-text" type="text" placeholder="Escreva aqui...">
-      <p id="type-status"></p>
+      <p data-test="recipient" id="type-status"></p>
     </div>
     <ion-icon id="send-message" name="paper-plane-outline"></ion-icon>
   </div>

@@ -180,7 +180,7 @@ class User {
           }
           changed = true;
           newInnerHTML = `
-            <div class="chat-line ${messages[i].type}">
+            <div class="chat-line ${messages[i].type} data-test='message'">
             <p>
               (${formatTime(messages[i].time)})  <span class="strong"> ${messages[i].from} </span> ${visibility} para
                 <span class="strong"> ${messages[i].to}</span>: ${messages[i].text}
@@ -239,6 +239,7 @@ class User {
           }
           newElement = document.createElement("div");
           newElement.classList.add("nav-line");
+          newElement.dataset.test = "participants";
           newElement.id = i;
           newElement.innerHTML = `
           <ion-icon name="person-circle"></ion-icon>
@@ -246,14 +247,14 @@ class User {
           `;
           if (this.navbarSelectedUsername === this.users[i].name) {
             selectedPersisted = true;
-            newElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+            newElement.innerHTML += `<img data-test="check" src="./assets/images/checkmark.png" alt="choosen option">`;
             this.receiverID = i.toString();
           }
           usersBox.appendChild(newElement);
           newElement.addEventListener("click", this.selectRecipient.bind(this));
         }
         if (!selectedPersisted && this.receiverID !== "0") {
-          sendingToAll.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+          sendingToAll.innerHTML += `<img data-test="check" src="./assets/images/checkmark.png" alt="choosen option">`;
           this.receiverID = "0";
           this.selectOption(publicOption, "type");
         }
@@ -269,7 +270,7 @@ class User {
     const oldRecipient = document.getElementById(this[attr]);
     oldRecipient.removeChild(oldRecipient.lastElementChild);
     this[attr] = clickedElement.id;
-    clickedElement.innerHTML += `<img src="./assets/images/checkmark.png" alt="choosen option">`;
+    clickedElement.innerHTML += `<img data-test="check" src="./assets/images/checkmark.png" alt="choosen option">`;
     this.updateMessageTypeStatus();
   }
   selectRecipient(e) {
